@@ -1,12 +1,42 @@
 {
-	"name": "dataflow1",
+	"name": "DF_SplitTransformation",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
-			"script": ""
+			"sources": [
+				{
+					"name": "Emp"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Ds_Output",
+						"type": "DatasetReference"
+					},
+					"name": "IandDEmpList"
+				},
+				{
+					"dataset": {
+						"referenceName": "Ds_Output",
+						"type": "DatasetReference"
+					},
+					"name": "HREmpList"
+				},
+				{
+					"dataset": {
+						"referenceName": "Ds_Output",
+						"type": "DatasetReference"
+					},
+					"name": "PayrollEmpList"
+				}
+			],
+			"transformations": [
+				{
+					"name": "IandDEmp"
+				}
+			],
+			"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcity as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false) ~> Emp\nEmp split(equals(department,'1'),\n\tequals(department,'2'),\n\tequals(department,'3'),\n\tdisjoint: false) ~> IandDEmp@(IandDEmp, HREmp, PayrollEmp)\nIandDEmp@IandDEmp sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tcountry as string,\n\t\tcountry_code_2_digit as string,\n\t\tcountry_code_3_digit as string,\n\t\tcontinent as string,\n\t\tpopulation as string\n\t),\n\tpartitionFileNames:['I&DEmpList'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> IandDEmpList\nIandDEmp@HREmp sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tcountry as string,\n\t\tcountry_code_2_digit as string,\n\t\tcountry_code_3_digit as string,\n\t\tcontinent as string,\n\t\tpopulation as string\n\t),\n\tpartitionFileNames:['HREmpList'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> HREmpList\nIandDEmp@PayrollEmp sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tcountry as string,\n\t\tcountry_code_2_digit as string,\n\t\tcountry_code_3_digit as string,\n\t\tcontinent as string,\n\t\tpopulation as string\n\t),\n\tpartitionFileNames:['PayRollEmp'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> PayrollEmpList"
 		}
 	}
 }
