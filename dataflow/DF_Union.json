@@ -1,0 +1,46 @@
+{
+	"name": "DF_Union",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DS_IandD",
+						"type": "DatasetReference"
+					},
+					"name": "IandDEmp"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_HR",
+						"type": "DatasetReference"
+					},
+					"name": "HREmp"
+				},
+				{
+					"dataset": {
+						"referenceName": "DS_Payroll",
+						"type": "DatasetReference"
+					},
+					"name": "Payroll"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Ds_Output",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "UnionAllDept"
+				}
+			],
+			"script": "source(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcity as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> IandDEmp\nsource(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcity as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> HREmp\nsource(output(\n\t\tempid as string,\n\t\tname as string,\n\t\tcity as string,\n\t\tdepartment as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Payroll\nIandDEmp, HREmp, Payroll union(byName: true)~> UnionAllDept\nUnionAllDept sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tcountry as string,\n\t\tcountry_code_2_digit as string,\n\t\tcountry_code_3_digit as string,\n\t\tcontinent as string,\n\t\tpopulation as string\n\t),\n\tpartitionFileNames:['UnionDepartment'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> sink1"
+		}
+	}
+}
